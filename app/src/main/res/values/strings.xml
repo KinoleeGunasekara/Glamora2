@@ -1,0 +1,28 @@
+<resources>
+    <!-- App Information -->
+    <string name="app_name">Glamora</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_image_content_description">Main splash screen image of a model</string>
+    <string name="splash_tagline">Dress Like\nNever Before</string>
+    <string name="splash_subtext">Where Every Click is a Step Closer\nto Your Perfect Purchase !</string>
+    <string name="splash_button_text">Swipe To Get Started</string>
+    <string name="arrow_forward_icon_content_description">Arrow pointing forward</string>
+
+    <!-- Branding -->
+    <string name="brand_name">GLAMORA</string>
+
+    <!-- Common Fields -->
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+
+    <!-- Login -->
+    <string name="login">Login</string>
+    <string name="new_user">New User? Sign Up</string>
+
+    <!-- Register -->
+    <string name="register">Register</string>
+    <string name="already_have_account">Already have an account? Login</string>
+</resources>
