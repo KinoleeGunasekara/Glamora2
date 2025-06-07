@@ -22,40 +22,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
-import com.example.glamora.R // Ensure this R exists for drawable resources
-import com.example.glamora.ui.navigation.Screen // Corrected: Added the import for your navigation Screen object
+import com.example.glamora.R
+import com.example.glamora.ui.navigation.Screen
 
 @Composable
 fun SplashScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background) // Main background color for the entire screen
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // --- Full-screen Image as the Base Layer ---
-        // This image will fill the entire screen, acting as the background.
+
         Image(
-            painter = painterResource(id = R.drawable.splash_screen_img), // Your main splash image resource
+            painter = painterResource(id = R.drawable.splash_screen_img),
             contentDescription = stringResource(id = R.string.splash_image_content_description),
-            contentScale = ContentScale.Crop, // Crop to fill bounds while maintaining aspect ratio
-            modifier = Modifier.fillMaxSize() // Image fills the entire parent Box
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
-        // --- Bottom Section: Texts and Button Overlay ---
-        // This Column is placed on top of the image and aligned to the bottom.
-        // It will have rounded top corners visible against the image.
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter) // Align this column to the bottom of the Box
-                .fillMaxHeight(0.35f) // Adjusted height to make the text section smaller (e.g., 35% from bottom)
-                .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) // Apply rounded corners to the top
-                .background(MaterialTheme.colorScheme.surface) // Background for the bottom content section (white in the example)
-                .padding(horizontal = 24.dp, vertical = 24.dp), // Added vertical padding for better spacing within this section
+                .align(Alignment.BottomCenter)
+                .fillMaxHeight(0.35f)
+                .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 24.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly // Distribute children and space evenly within the column
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            // "Dress Like Never Before" text
+
             Text(
                 text = stringResource(id = R.string.splash_tagline),
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
@@ -64,7 +61,7 @@ fun SplashScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // "Where Every Click is a Step Closer to Your Perfect Purchase !" sub-headline
+
             Text(
                 text = stringResource(id = R.string.splash_subtext),
                 style = MaterialTheme.typography.bodyMedium,
@@ -73,7 +70,7 @@ fun SplashScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // "Swipe To Get Started" button
+
             Button(
                 onClick = {
                     navController.navigate(
@@ -84,10 +81,10 @@ fun SplashScreen(navController: NavController) {
                     )
                 },
                 modifier = Modifier
-                    .fillMaxWidth(0.9f) // Occupy 90% of the bottom section's width
-                    .height(56.dp) // Fixed height for the button
-                    .clip(RoundedCornerShape(28.dp)), // Fully rounded capsule shape
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) // Use primary color for button background
+                    .fillMaxWidth(0.9f)
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(28.dp)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
                     text = stringResource(id = R.string.splash_button_text),
