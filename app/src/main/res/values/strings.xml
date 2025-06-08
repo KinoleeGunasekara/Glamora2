@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- App Information -->
     <string name="app_name">Glamora</string>
 
@@ -21,8 +23,38 @@
     <!-- Login -->
     <string name="login">Login</string>
     <string name="new_user">New User? Sign Up</string>
+    <string name="hello">Hello!</string>
+    <string name="welcome_message">Welcome to Glamora</string>
 
     <!-- Register -->
     <string name="register">Register</string>
     <string name="already_have_account">Already have an account? Login</string>
+
+    <!-- Product Details -->
+    <string name="product_details_title">Product Details</string>
+    <string name="back">Back</string>
+    <string name="add_to_wishlist">Add to Wishlist</string>
+    <string name="female_style">Female's Style</string>
+    <string name="rating">4.5</string>
+
+    <string name="read_more">Read more</string>
+    <string name="read_less">Read less</string>
+
+    <string name="product_short_description">
+        This stylish and elegant dress is perfect for any occasion.
+    </string>
+
+    <string name="product_long_description">
+        This stylish and elegant dress is perfect for any occasion. Crafted from high-quality fabric, it offers both comfort and durability. The tailored fit highlights your figure while providing freedom of movement. Available in multiple sizes and colors, this dress is a versatile addition to your wardrobe. Care instructions: Machine wash cold, gentle cycle. Made with love and attention to detail.
+    </string>
+
+    <string name="select_size">Select Size</string>
+    <string name="select_color">Select Color</string>
+    <string name="total_price">Total Price</string>
+    <string name="add_to_cart">Add to Cart</string>
+
+    <string name="thumbnail_content_description">Thumbnail</string>
+    <string name="main_product_image_description">Main Product Image</string>
+    <string name="shopping_cart_description">Add to Cart</string>
+
 </resources>
