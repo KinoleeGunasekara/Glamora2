@@ -21,8 +21,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.glamora.R
+import com.example.glamora.ui.component.GlamoraTextField
 import com.example.glamora.ui.navigation.Screen
-import com.example.glamora.ui.theme.GlamoraTheme
 import com.example.glamora.ui.theme.Typography
 
 @Composable
@@ -30,9 +30,7 @@ fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.background_img),
             contentDescription = null,
@@ -53,7 +51,6 @@ fun LoginScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(bottom = 48.dp)
@@ -90,44 +87,21 @@ fun LoginScreen(navController: NavController) {
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
 
-                    OutlinedTextField(
+                    GlamoraTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text(stringResource(R.string.email)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                            unfocusedBorderColor = Color.Gray.copy(alpha = 0.7f),
-                            focusedLabelColor = MaterialTheme.colorScheme.secondary,
-                            unfocusedLabelColor = Color.Gray.copy(alpha = 0.7f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                        label = stringResource(R.string.email),
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    OutlinedTextField(
+                    GlamoraTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text(stringResource(R.string.password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        label = stringResource(R.string.password),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                            unfocusedBorderColor = Color.Gray.copy(alpha = 0.7f),
-                            focusedLabelColor = MaterialTheme.colorScheme.secondary,
-                            unfocusedLabelColor = Color.Gray.copy(alpha = 0.7f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                        visualTransformation = PasswordVisualTransformation()
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -162,9 +136,7 @@ fun LoginScreen(navController: NavController) {
                         style = Typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .clickable {
-                                navController.navigate(Screen.Register.route)
-                            }
+                            .clickable { navController.navigate(Screen.Register.route) }
                             .padding(vertical = 12.dp)
                     )
                 }
