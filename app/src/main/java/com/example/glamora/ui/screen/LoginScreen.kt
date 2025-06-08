@@ -1,14 +1,21 @@
 package com.example.glamora.ui.screen
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -16,52 +23,93 @@ import androidx.navigation.NavController
 import com.example.glamora.R
 import com.example.glamora.ui.navigation.Screen
 import com.example.glamora.ui.theme.GlamoraTheme
+import com.example.glamora.ui.theme.Typography
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showContent by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        showContent = true
-    }
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_img),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    GlamoraTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f))
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 48.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AnimatedVisibility(visible = showContent) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 48.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.hello),
+                    style = Typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.welcome_message),
+                    style = Typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Brand Name
                     Text(
-                        text = stringResource(R.string.brand_name),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        text = stringResource(R.string.login),
+                        style = Typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 32.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Email Input
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         label = { Text(stringResource(R.string.email)) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedBorderColor = Color.Gray.copy(alpha = 0.7f),
+                            focusedLabelColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedLabelColor = Color.Gray.copy(alpha = 0.7f),
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Password Input
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -69,34 +117,55 @@ fun LoginScreen(navController: NavController) {
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedBorderColor = Color.Gray.copy(alpha = 0.7f),
+                            focusedLabelColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedLabelColor = Color.Gray.copy(alpha = 0.7f),
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // Login Button
                     Button(
                         onClick = {
                             navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = ButtonDefaults.buttonElevation(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        contentPadding = PaddingValues(16.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
                     ) {
-                        Text(text = stringResource(R.string.login))
+                        Text(
+                            text = stringResource(R.string.login),
+                            style = Typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // Navigation to Register
                     Text(
                         text = stringResource(R.string.new_user),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = Typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable {
-                            navController.navigate(Screen.Register.route)
-                        }
+                        modifier = Modifier
+                            .clickable {
+                                navController.navigate(Screen.Register.route)
+                            }
+                            .padding(vertical = 12.dp)
                     )
                 }
             }
