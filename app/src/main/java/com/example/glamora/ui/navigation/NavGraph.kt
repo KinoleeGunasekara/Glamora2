@@ -5,6 +5,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.glamora.ui.screens.home.HomeScreen
+import androidx.compose.material3.Text
 import com.example.glamora.ui.screen.*
 
 sealed class Screen(val route: String) {
@@ -12,12 +14,10 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object Home : Screen("home")
-    object Categories : Screen("categories")
+    object Discover : Screen("discover")
     object Cart : Screen("cart")
     object Profile : Screen("profile")
-    object ProductDetail : Screen("productDetail/{productId}") {
-        fun createRoute(productId: String) = "productDetail/$productId"
-    }
+    object ProductDetail : Screen("productDetail")
 }
 
 @Composable
@@ -35,8 +35,8 @@ fun GlamoraNavGraph(navController: NavHostController = rememberNavController()) 
         composable(Screen.Home.route) {
             HomeScreen(navController)
         }
-        composable(Screen.Categories.route) {
-            CategoriesScreen(navController)
+        composable(Screen.Discover.route) {
+            DiscoverScreen(navController)
         }
         composable(Screen.Cart.route) {
             CartScreen(navController)
@@ -44,34 +44,39 @@ fun GlamoraNavGraph(navController: NavHostController = rememberNavController()) 
         composable(Screen.Profile.route) {
             ProfileScreen(navController)
         }
-        composable(Screen.ProductDetail.route) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId") ?: ""
-            ProductDetailScreen(productId = productId, navController = navController)
+        composable(Screen.ProductDetail.route) {
+            ProductDetailScreen(navController)
         }
     }
 }
 
+
 @Composable
-fun ProductDetailScreen(productId: String, navController: NavHostController) {
-    TODO("Not yet implemented")
+fun LoginScreen(navController: NavHostController) {
+    Text("Login Screen")
 }
 
 @Composable
-fun ProfileScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
+fun RegisterScreen(navController: NavHostController) {
+    Text("Register Screen")
 }
 
 @Composable
-fun CartScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
+fun DiscoverScreen(navController: NavHostController) {
+    Text("Discover Screen")
 }
 
 @Composable
-fun CategoriesScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
+fun CartScreen(navController: NavHostController) {
+    Text("Cart Screen")
 }
 
 @Composable
-fun HomeScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
+fun ProfileScreen(navController: NavHostController) {
+    Text("Profile Screen")
+}
+
+@Composable
+fun ProductDetailScreen(navController: NavHostController) {
+    Text("Product Detail Screen")
 }
