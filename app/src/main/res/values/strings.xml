@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- App Information -->
     <string name="app_name">Glamora</string>
 
     <!-- Splash Screen -->
     <string name="splash_image_content_description">Main splash screen image of a model</string>
     <string name="splash_tagline">Dress Like\nNever Before</string>
-    <string name="splash_subtext">Where Every Click is a Step Closer\nto Your Perfect Purchase !</string>
+    <string name="splash_subtext">Where Every Click is a Step Closer\nto Your Perfect Purchase!</string>
     <string name="splash_button_text">Swipe To Get Started</string>
     <string name="arrow_forward_icon_content_description">Arrow pointing forward</string>
 
@@ -30,31 +29,58 @@
     <string name="register">Register</string>
     <string name="already_have_account">Already have an account? Login</string>
 
-    <!-- Product Details -->
-    <string name="product_details_title">Product Details</string>
-    <string name="back">Back</string>
-    <string name="add_to_wishlist">Add to Wishlist</string>
-    <string name="female_style">Female's Style</string>
-    <string name="rating">4.5</string>
-
-    <string name="read_more">Read more</string>
-    <string name="read_less">Read less</string>
-
-    <string name="product_short_description">
-        This stylish and elegant dress is perfect for any occasion.
-    </string>
-
-    <string name="product_long_description">
-        This stylish and elegant dress is perfect for any occasion. Crafted from high-quality fabric, it offers both comfort and durability. The tailored fit highlights your figure while providing freedom of movement. Available in multiple sizes and colors, this dress is a versatile addition to your wardrobe. Care instructions: Machine wash cold, gentle cycle. Made with love and attention to detail.
-    </string>
-
+    <!-- Product Detail Screen -->
+    <string name="top_product_name">Elegant Pink Dress</string>
+    <string name="product_category_fashion">Women’s Fashion</string>
+    <string name="product_description_short">This elegant pink dress is perfect for any occasion. Designed with premium fabric, it ensures comfort while maintaining a chic look.</string>
     <string name="select_size">Select Size</string>
     <string name="select_color">Select Color</string>
-    <string name="total_price">Total Price</string>
+    <string name="add_to_cart_full_button_text">Add to Cart</string>
+    <string name="add_to_cart_link_text">Add to Cart</string>
+    <string name="save_offer_text">Save 50% Today!</string>
+    <string name="colors_label">Colors</string>
+    <string name="read_more">Read more</string>
+    <string name="show_less">Show less</string>
     <string name="add_to_cart">Add to Cart</string>
+    <string name="offer_text">Special 50% off limited time offer!</string>
 
-    <string name="thumbnail_content_description">Thumbnail</string>
-    <string name="main_product_image_description">Main Product Image</string>
-    <string name="shopping_cart_description">Add to Cart</string>
+    <!-- Quantity Buttons -->
+    <string name="increase_quantity_desc">Increase quantity</string>
+    <string name="decrease_quantity_desc">Decrease quantity</string>
+
+    <!-- Icons Content Descriptions -->
+    <string name="offer_icon_desc">Discount offer icon</string>
+    <string name="back_button_desc">Back button</string>
+
+    <!-- Cart Screen -->
+    <string name="cart_title">Your Cart</string>
+    <string name="back_button">Back</string>
+    <string name="cart_icon_content_description">Go to cart</string>
+    <string name="favorite_icon_content_description">Add to wishlist</string>
+    <string name="product_image_content_description">Image of Elegant Pink Dress</string>
+    <string name="add_more_items">+ Add more items</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="taxes_and_fees">Taxes &amp; Fees</string>
+    <string name="delivery">Delivery</string>
+    <string name="total">Total</string>
+    <string name="checkout">Checkout</string>
+
+    <!-- Profile Screen -->
+
+    <string name="profile_screen_title_v2">Profile</string>
+    <string name="profile_image_desc_v2">User\'s profile picture</string>
+    <string name="edit_profile_icon_desc_v2">Edit profile picture</string>
+    <string name="profile_name_v2">Jack William</string>
+    <string name="profile_email_v2">jackwilliam1704@gmail.com</string>
+    <string name="menu_edit_profile_v2">Edit Profile</string>
+    <string name="menu_payment_method_v2">Payment Method</string>
+    <string name="menu_language_v2">Language</string>
+    <string name="menu_order_history_v2">Order History</string>
+    <string name="menu_invite_friends_v2">Invite Friends</string>
+    <string name="menu_help_center_v2">Help Center</string>
+    <string name="arrow_forward_icon_desc_v2">Forward arrow</string>
+    <string name="menu_logout">Log out</string>
+    <string name="menu_address_v2">Address</string>
+
 
 </resources>
