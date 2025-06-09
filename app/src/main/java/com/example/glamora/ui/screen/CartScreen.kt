@@ -1,5 +1,6 @@
 package com.example.glamora.ui.screen
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +45,9 @@ fun CartScreen(navController: androidx.navigation.NavController) {
     val delivery = 8.00
     val total = subtotal + taxes + delivery
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,7 +60,6 @@ fun CartScreen(navController: androidx.navigation.NavController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        // Navigate back to Discover (or your details screen)
                         navController.navigate(Screen.Discover.route) {
                             popUpTo(Screen.Discover.route) { inclusive = true }
                         }
@@ -76,63 +80,134 @@ fun CartScreen(navController: androidx.navigation.NavController) {
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+        if (isLandscape) {
+            Row(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
             ) {
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(mockCartItems) { item ->
+                        CartItem(
+                            product = item,
+                            quantity = 1,
+                            onQuantityChange = {}
+                        )
+                    }
 
-                items(mockCartItems) { item ->
-                    CartItem(
-                        product = item,
-                        quantity = 1, // fixed quantity
-                        onQuantityChange = {} // no-op
-                    )
+                    item {
+                        TextButton(
+                            onClick = { /* no-op */ },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.add_more_items),
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
 
-                item {
-                    TextButton(
-                        onClick = { /* no-op */ },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.add_more_items),
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                LazyColumn(
+                    modifier = Modifier
+                        .width(300.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(24.dp)
+                ) {
+                    item {
+                        SummaryRow(stringResource(R.string.subtotal), "$%.2f".format(subtotal))
+                        SummaryRow(stringResource(R.string.taxes_and_fees), "$%.2f".format(taxes))
+                        SummaryRow(stringResource(R.string.delivery), "$%.2f".format(delivery))
+                        Divider(Modifier.padding(vertical = 16.dp))
+                        SummaryRow(stringResource(R.string.total), "$%.2f".format(total), isTotal = true)
+
+                        Spacer(Modifier.height(24.dp))
+                    }
+
+                    item {
+                        Button(
+                            onClick = { /* no-op */ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Text(stringResource(R.string.checkout), style = MaterialTheme.typography.titleMedium)
+                        }
                     }
                 }
             }
-
+        } else {
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(24.dp)
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
             ) {
-                SummaryRow(stringResource(R.string.subtotal), "$%.2f".format(subtotal))
-                SummaryRow(stringResource(R.string.taxes_and_fees), "$%.2f".format(taxes))
-                SummaryRow(stringResource(R.string.delivery), "$%.2f".format(delivery))
-                Divider(Modifier.padding(vertical = 16.dp))
-                SummaryRow(stringResource(R.string.total), "$%.2f".format(total), isTotal = true)
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                Spacer(Modifier.height(24.dp))
+                    items(mockCartItems) { item ->
+                        CartItem(
+                            product = item,
+                            quantity = 1,
+                            onQuantityChange = {}
+                        )
+                    }
 
-                Button(
-                    onClick = { /* no-op */ },
+                    item {
+                        TextButton(
+                            onClick = { /* no-op */ },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.add_more_items),
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(28.dp)
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(24.dp)
                 ) {
-                    Text(stringResource(R.string.checkout), style = MaterialTheme.typography.titleMedium)
+                    item {
+                        SummaryRow(stringResource(R.string.subtotal), "$%.2f".format(subtotal))
+                        SummaryRow(stringResource(R.string.taxes_and_fees), "$%.2f".format(taxes))
+                        SummaryRow(stringResource(R.string.delivery), "$%.2f".format(delivery))
+                        Divider(Modifier.padding(vertical = 16.dp))
+                        SummaryRow(stringResource(R.string.total), "$%.2f".format(total), isTotal = true)
+
+                        Spacer(Modifier.height(24.dp))
+                    }
+
+                    item {
+                        Button(
+                            onClick = { /* no-op */ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Text(stringResource(R.string.checkout), style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
             }
         }
@@ -185,7 +260,7 @@ fun QuantityButton(symbol: String, onClick: () -> Unit) {
         shape = CircleShape,
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (symbol == "+") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primary
         )
     ) {
         Text(symbol, color = MaterialTheme.colorScheme.onPrimary)

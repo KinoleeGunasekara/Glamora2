@@ -14,6 +14,7 @@ import com.example.glamora.ui.screens.ProductDetailScreen
 import com.example.glamora.ui.screens.ProfileScreen
 import com.example.glamora.ui.screens.home.HomeScreen
 
+
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Login : Screen("login")
