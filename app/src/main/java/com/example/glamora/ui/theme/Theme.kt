@@ -38,7 +38,7 @@ fun GlamoraTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Assuming Typography is defined elsewhere or using Material3 defaults
+        typography = Typography,
         content = content
     )
 }
