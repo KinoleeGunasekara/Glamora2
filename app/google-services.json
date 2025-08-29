@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "360440547337",
+    "project_id": "glamora-a4089",
+    "storage_bucket": "glamora-a4089.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360440547337:android:b4ba42746f8418fa7ed0d8",
+        "android_client_info": {
+          "package_name": "com.example.glamora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbUO94NHdU1Xo-WEdqnnP5Ld4Q5VFscYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
