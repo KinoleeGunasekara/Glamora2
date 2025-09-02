@@ -23,20 +23,34 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.glamora.R
 import com.example.glamora.ui.navigation.Screen
 import com.example.glamora.ui.theme.Typography
 import com.example.glamora.ui.component.BottomBar
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
+    val context = LocalContext.current
+
+    // Correct GoogleSignInClient setup
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -170,6 +184,11 @@ fun ProfileScreen(navController: NavController) {
                     icon = Icons.AutoMirrored.Filled.Logout,
                     label = stringResource(R.string.menu_logout),
                     onClick = {
+                        // Sign out from Firebase
+                        auth.signOut()
+                        // Sign out from Google
+                        googleSignInClient.signOut()
+                        // Navigate to LoginScreen and clear backstack
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
