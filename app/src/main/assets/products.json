@@ -1,0 +1,130 @@
+[
+  {
+    "id": 1,
+    "title": "Silk Midi Dress",
+    "price": 49.99,
+    "description": "Crafted from breathable, high-quality silk, this flowy midi dress features a delicate sweetheart neckline and an adjustable tie-waist. It's the perfect versatile piece for sophisticated summer parties, weddings, or a chic evening out. Its light texture ensures comfort all day long.",
+    "category": "Women's clothing",
+    "image": "dress1"
+  },
+  {
+    "id": 2,
+    "title": "Classic White Trainers",
+    "price": 69.99,
+    "description": "The essential staple for any wardrobe. These trainers are constructed with durable, genuine white leather and feature a cushioned sole for maximum comfort. Their minimalist design makes them effortlessly pairable with jeans, skirts, or even tailored trousers for a smart-casual look.",
+    "category": "Women's clothing",
+    "image": "shoe1"
+  },
+  {
+    "id": 3,
+    "title": "Quilted Crossbody Bag",
+    "price": 89.99,
+    "description": "A chic accessory featuring a luxurious diamond quilt pattern on genuine leather. This small crossbody bag is spacious enough for your essentials—phone, keys, and wallet—and includes an elegant gold chain strap that can be doubled up for shoulder wear.",
+    "category": "Women's clothing",
+    "image": "bag1"
+  },
+  {
+    "id": 4,
+    "title": "Silver Hoop Earrings",
+    "price": 19.50,
+    "description": "Modern and eye-catching. These large, lightweight silver hoop earrings are made from hypoallergenic sterling silver-plated material, ensuring comfortable wear throughout the day. They provide a bold yet classic statement to elevate any outfit instantly.",
+    "category": "Jewelery",
+    "image": "jewel1"
+  },
+  {
+    "id": 5,
+    "title": "Oversized Cotton Tee",
+    "price": 29.99,
+    "description": "The ultimate comfort wear. This oversized t-shirt is made from pre-shrunk, heavyweight organic cotton, offering a relaxed fit and a soft, breathable feel. Perfect for layering, loungewear, or a casual weekend look when paired with biker shorts or denim.",
+    "category": "Women's clothing",
+    "image": "top1"
+  },
+  {
+    "id": 6,
+    "title": "High-Waist Denim Skirt",
+    "price": 45.00,
+    "description": "A throwback piece updated for the modern era. This denim mini-skirt features a flattering A-line cut, a high-waisted fit, and a vintage-wash finish. It includes practical front and back pockets and looks great with boots or sneakers.",
+    "category": "Women's clothing",
+    "image": "skirt1"
+  },
+  {
+    "id": 7,
+    "title": "Suede Ankle Boots",
+    "price": 110.00,
+    "description": "Rich, brown genuine suede boots perfect for autumn and winter. They feature a sturdy low block heel for stability and a convenient side zipper. These versatile boots pair effortlessly with dresses, leggings, or cropped denim.",
+    "category": "Women's clothing",
+    "image": "boot1"
+  },
+  {
+    "id": 8,
+    "title": "Minimalist Tote Bag",
+    "price": 75.00,
+    "description": "A large, structured tote crafted from durable vegan leather. It features clean lines, a wide base, and plenty of interior space, making it ideal for carrying a laptop, books, and work essentials. A truly minimalist and professional design.",
+    "category": "Women's clothing",
+    "image": "bag2"
+  },
+  {
+    "id": 9,
+    "title": "Gold Layered Necklace",
+    "price": 35.00,
+    "description": "Achieve a perfectly layered look effortlessly with this pre-stacked necklace set. It features three delicate chains of varying lengths, all plated in 18k gold. The set includes a coin pendant, a simple bar, and a fine snake chain.",
+    "category": "Jewelery",
+    "image": "jewel2"
+  },
+  {
+    "id": 10,
+    "title": "Striped Knit Sweater",
+    "price": 55.99,
+    "description": "Cozy up in this soft wool-blend knit sweater featuring classic blue and white horizontal stripes. Its relaxed crew neck and dropped shoulders provide a comfortable, slightly oversized fit, perfect for chilly evenings.",
+    "category": "Women's clothing",
+    "image": "top2"
+  },
+  {
+    "id": 11,
+    "title": "Emerald Evening Gown",
+    "price": 199.99,
+    "description": "Make a statement in this breathtaking emerald green gown. It features a plunging neckline, a subtle train, and soft ruching that flatters the figure. This full-length dress is designed for black-tie events, galas, and special occasions where elegance is paramount.",
+    "category": "Women's clothing",
+    "image": "dress2"
+  },
+  {
+    "id": 12,
+    "title": "Running Shoes Pro",
+    "price": 120.00,
+    "description": "Engineered for speed and endurance, these lightweight athletic shoes feature reactive foam cushioning and a breathable mesh upper. Designed specifically for distance running, they provide superior energy return and stability on various terrains.",
+    "category": "Men's clothing",
+    "image": "shoe2"
+  },
+  {
+    "id": 13,
+    "title": "Nylon Rucksack",
+    "price": 60.00,
+    "description": "A rugged and versatile nylon backpack built for daily commute or weekend hikes. It features multiple external zip pockets, padded shoulder straps, and a separate sleeve for a 15-inch laptop. Durable and water-resistant.",
+    "category": "Men's clothing",
+    "image": "bag3"
+  },
+  {
+    "id": 14,
+    "title": "Waterproof Trench Coat",
+    "price": 149.00,
+    "description": "An essential piece of outerwear. This lightweight trench coat is fully lined and features a water-resistant shell, adjustable cuffs, and a detachable belt, providing timeless style and protection from the elements.",
+    "category": "Men's clothing",
+    "image": "men1"
+  },
+  {
+    "id": 15,
+    "title": "Men's Slim Fit Chinos",
+    "price": 79.99,
+    "description": "Tailored for a modern, slim silhouette, these cotton-twill chinos offer a blend of comfort and style. They are wrinkle-resistant and feature deep side pockets, perfect for smart-casual office wear or weekend outings.",
+    "category": "Men's clothing",
+    "image": "men2"
+  },
+  {
+    "id": 16,
+    "title": "Leather Bifold Wallet",
+    "price": 45.00,
+    "description": "A minimalist bifold wallet crafted from genuine full-grain leather. It features six card slots, two hidden pockets, and a full-length compartment for cash, offering both durability and essential functionality.",
+    "category": "Men's clothing",
+    "image": "men3"
+  }
+]
