@@ -3,15 +3,12 @@ package com.example.glamora.ui.screen
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -26,44 +23,54 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.glamora.R
 import com.example.glamora.data.Product
 import com.example.glamora.ui.component.BottomBar
 import com.example.glamora.ui.component.ProductCard
 import com.example.glamora.ui.navigation.Screen
+import com.example.glamora.viewmodel.CartViewModel
 import com.example.glamora.viewmodel.ProductUiState
 import com.example.glamora.viewmodel.ProductViewModel
 
-// Define the maximum number of products to show on the Home Screen as 'few products'
+// Maximum number of featured products to display on the home screen by default
 private const val MAX_HOME_PRODUCTS = 6
 
 /**
- * HomeScreen:
- * - Observes ProductViewModel for product list (API or offline JSON).
- * - **Removes category filtering and filter chips** to simplify the home view.
- * - **Displays only the first 6 products** when no search query is active.
+ * ---------------------------- HOME SCREEN MAIN ENTRY POINT ----------------------------
+ *
+ * This composable represents the main Home screen of the Glamora app.
+ * Responsibilities:
+ * - Observes the ProductViewModel to display product data.
+ * - Displays static top section (Search + Banner).
+ * - Renders a responsive, scrollable product grid layout.
+ * - Supports both portrait and landscape orientations.
  */
 @Composable
-fun HomeScreen(navController: NavController, viewModel: ProductViewModel) {
-    // Collect the product UI state (Loading/Success/Error) from the ViewModel
+fun HomeScreen(
+    navController: NavController,
+    viewModel: ProductViewModel,
+    cartViewModel: CartViewModel
+) {
+    // Collect the current UI state (Loading, Error, Success) from the ViewModel.
     val uiState by viewModel.uiState.collectAsState()
 
-    // State for the user's input in the SearchBar
+    // State variable to store user search input.
     var searchQuery by remember { mutableStateOf("") }
 
-    // Logic for responsive layout (padding and grid columns) based on screen size/orientation
+    // Detect current screen configuration (used for responsive design).
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val screenWidthDp = configuration.screenWidthDp
 
+    // Dynamically adjust horizontal padding based on screen width.
     val horizontalPadding = when {
         screenWidthDp > 840 -> 48.dp
         screenWidthDp > 600 -> 32.dp
         else -> 16.dp
     }
 
+    // Dynamically adjust grid columns based on available width or orientation.
     val gridColumns = when {
         screenWidthDp > 1000 -> 5
         screenWidthDp > 840 -> 4
@@ -72,41 +79,54 @@ fun HomeScreen(navController: NavController, viewModel: ProductViewModel) {
         else -> 2
     }
 
+    // Scaffold provides a standard app layout structure with BottomBar.
     Scaffold(bottomBar = { BottomBar(navController) }) { padding ->
         when (uiState) {
+
+            // ----------------------------- LOADING STATE -----------------------------
             is ProductUiState.Loading -> {
-                // Show loading indicator
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                // Display a loading spinner centered on screen.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
 
+            // ----------------------------- ERROR STATE -----------------------------
             is ProductUiState.Error -> {
-                // Show error message
+                // Display an error message if data fetch fails.
                 val message = (uiState as ProductUiState.Error).message
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = message, color = MaterialTheme.colorScheme.error)
                 }
             }
 
+            // ----------------------------- SUCCESS STATE -----------------------------
             is ProductUiState.Success -> {
-                // Data successfully loaded
+                // Extract list of products from ViewModel.
                 val products = (uiState as ProductUiState.Success).products
 
-                // 1. **Apply Search Filtering**: Filter by title, ignoring category
-                val searchFilteredProducts = products.filter { product ->
-                    product.title.contains(searchQuery, ignoreCase = true)
+                // Filter products by search query (case-insensitive).
+                val searchFilteredProducts = products.filter {
+                    it.title.contains(searchQuery, ignoreCase = true)
                 }
 
-                // 2. **Apply Product Limiting**: Show only MAX_HOME_PRODUCTS (6) when not searching.
-                // When searching, show all matched products.
+                // If search query is blank, show only first 6 items.
+                // Otherwise, show all matching results.
                 val homeProducts = if (searchQuery.isBlank()) {
                     searchFilteredProducts.take(MAX_HOME_PRODUCTS)
-                } else {
-                    searchFilteredProducts
-                }
+                } else searchFilteredProducts
 
-                // Choose layout based on orientation
+                // Use separate composables for portrait and landscape layout handling.
                 if (isLandscape) {
                     LandscapeHomeContent(
                         navController = navController,
@@ -115,7 +135,8 @@ fun HomeScreen(navController: NavController, viewModel: ProductViewModel) {
                         onSearchChange = { searchQuery = it },
                         horizontalPadding = horizontalPadding,
                         gridColumns = gridColumns,
-                        padding = padding
+                        padding = padding,
+                        cartViewModel = cartViewModel
                     )
                 } else {
                     PortraitHomeContent(
@@ -125,7 +146,8 @@ fun HomeScreen(navController: NavController, viewModel: ProductViewModel) {
                         onSearchChange = { searchQuery = it },
                         horizontalPadding = horizontalPadding,
                         gridColumns = gridColumns,
-                        padding = padding
+                        padding = padding,
+                        cartViewModel = cartViewModel
                     )
                 }
             }
@@ -133,21 +155,86 @@ fun HomeScreen(navController: NavController, viewModel: ProductViewModel) {
     }
 }
 
-// -------------------------------------------------------------------------------------------------
+/* ============================================================================================= */
+/* =============================== PORTRAIT HOME LAYOUT ======================================== */
+/* ============================================================================================= */
 
 /**
- * Landscape layout structure for the Home Screen.
- * NOTE: Does NOT include category filter chips.
+ * Portrait layout of the Home screen.
+ * The upper section (Search bar + Banner) is static,
+ * and only the product grid is scrollable.
  */
 @Composable
-fun LandscapeHomeContent(
+fun PortraitHomeContent(
     navController: NavController,
-    products: List<Product>, // The list contains limited/searched products
+    products: List<Product>,
     searchQuery: String,
     onSearchChange: (String) -> Unit,
     horizontalPadding: Dp,
     gridColumns: Int,
-    padding: PaddingValues
+    padding: PaddingValues,
+    cartViewModel: CartViewModel
+) {
+    Column(
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = horizontalPadding)
+    ) {
+        // --- STATIC HEADER SECTION ---
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Top search bar component
+        SearchBar(searchQuery, onSearchChange)
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Promotional banner image
+        Image(
+            painter = painterResource(id = R.drawable.banner),
+            contentDescription = stringResource(R.string.promotional_banner),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(20.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // --- SCROLLABLE PRODUCT GRID SECTION ---
+        // Box with weight(1f) allows this area to expand and scroll,
+        // while keeping the header fixed.
+        Box(modifier = Modifier.weight(1f)) {
+            HomeProductGrid(
+                products = products,
+                navController = navController,
+                gridColumns = gridColumns,
+                cartViewModel = cartViewModel
+            )
+        }
+    }
+}
+
+/* ============================================================================================= */
+/* =============================== LANDSCAPE HOME LAYOUT ======================================= */
+/* ============================================================================================= */
+
+/**
+ * Landscape layout for wider screens (tablets, horizontal phones).
+ * Banner is positioned on the left and content on the right.
+ */
+@Composable
+fun LandscapeHomeContent(
+    navController: NavController,
+    products: List<Product>,
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    horizontalPadding: Dp,
+    gridColumns: Int,
+    padding: PaddingValues,
+    cartViewModel: CartViewModel
 ) {
     Row(
         modifier = Modifier
@@ -155,7 +242,7 @@ fun LandscapeHomeContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Left side: Banner image
+        // --- STATIC LEFT-SIDE BANNER ---
         Image(
             painter = painterResource(id = R.drawable.banner),
             contentDescription = stringResource(R.string.promotional_banner),
@@ -167,189 +254,124 @@ fun LandscapeHomeContent(
             contentScale = ContentScale.Crop
         )
 
-        // Right side: Search and Product Grid
+        // --- RIGHT-SIDE CONTENT (Search + Product Grid) ---
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f)
                 .padding(horizontal = horizontalPadding)
         ) {
-            val scrollState = rememberScrollState()
-            Column(modifier = Modifier.verticalScroll(scrollState)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                // Search bar
-                SearchBar(searchQuery, onSearchChange)
-                // Spacer replacing the removed Category Chips
-                Spacer(modifier = Modifier.height(20.dp))
-                // Header row: "Popular Products" (showing the limited set) and "See All" link
-                HeaderRow(navController)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Product grid (showing max 6 products if not searching)
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(gridColumns),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            ) {
-                items(products) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { navController.navigate(Screen.ProductDetail.createRoute(product.id)) },
-                        onCartClick = { navController.navigate(Screen.Cart.route) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-// -------------------------------------------------------------------------------------------------
-
-/**
- * Portrait layout structure for the Home Screen.
- * NOTE: Does NOT include category filter chips.
- */
-@Composable
-fun PortraitHomeContent(
-    navController: NavController,
-    products: List<Product>, // The list contains limited/searched products
-    searchQuery: String,
-    onSearchChange: (String) -> Unit,
-    horizontalPadding: Dp,
-    gridColumns: Int,
-    padding: PaddingValues
-) {
-    Column(
-        modifier = Modifier
-            .padding(padding)
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        val scrollState = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(horizontal = horizontalPadding)
-        ) {
             Spacer(modifier = Modifier.height(16.dp))
-            // Search bar
             SearchBar(searchQuery, onSearchChange)
-            // Spacer replacing the removed Category Chips
-            Spacer(modifier = Modifier.height(20.dp))
-            // Banner image
-            Image(
-                painter = painterResource(id = R.drawable.banner),
-                contentDescription = stringResource(R.string.promotional_banner),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(20.dp)),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            // Header row: "Popular Products" (showing the limited set) and "See All" link
-            HeaderRow(navController)
             Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        // Product grid (showing max 6 products if not searching)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(gridColumns),
-            contentPadding = PaddingValues(
-                start = horizontalPadding,
-                end = horizontalPadding,
-                top = 8.dp,
-                bottom = 80.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth().weight(1f)
-        ) {
-            items(products) { product ->
-                ProductCard(
-                    product = product,
-                    onClick = { navController.navigate(Screen.ProductDetail.createRoute(product.id)) },
-                    onCartClick = { navController.navigate(Screen.Cart.route) }
+            // Scrollable grid area
+            Box(modifier = Modifier.weight(1f)) {
+                HomeProductGrid(
+                    products = products,
+                    navController = navController,
+                    gridColumns = gridColumns,
+                    cartViewModel = cartViewModel
                 )
             }
         }
     }
 }
 
-// -------------------------------------------------------------------------------------------------
+/* ============================================================================================= */
+/* =============================== PRODUCT GRID COMPONENT ====================================== */
+/* ============================================================================================= */
 
 /**
- * SearchBar Composable: Allows users to search for products by title.
+ * Displays a scrollable grid of product cards.
+ * Each product card supports navigation to detail view and "add to cart" action.
  */
 @Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(50),
-        tonalElevation = 4.dp,
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+fun HomeProductGrid(
+    products: List<Product>,
+    navController: NavController,
+    gridColumns: Int,
+    cartViewModel: CartViewModel
+) {
+    Column {
+        // Section title
+        Text(
+            text = "Featured Products",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // LazyVerticalGrid efficiently renders large lists
+        // and only composes visible items for performance.
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(gridColumns),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = LocalTextStyle.current.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp
-                ),
-                decorationBox = { innerTextField ->
-                    Box {
-                        if (query.isEmpty()) {
-                            Text(
-                                text = "Search products...",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 16.sp
-                            )
-                        }
-                        innerTextField()
+            items(products) { product ->
+                ProductCard(
+                    product = product,
+                    // Clicking the card navigates to Product Detail screen
+                    onClick = { navController.navigate(Screen.ProductDetail.createRoute(product.id)) },
+                    // Clicking the cart icon adds the product and navigates to cart
+                    onCartClick = {
+                        cartViewModel.addItem(product)
+                        navController.navigate(Screen.Cart.route)
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
 
-// -------------------------------------------------------------------------------------------------
+/* ============================================================================================= */
+/* =============================== SEARCH BAR COMPONENT ======================================== */
+/* ============================================================================================= */
 
 /**
- * HeaderRow Composable: Displays "Popular Products" and a clickable "See All" link.
+ * Simple custom search bar used in the Home screen.
+ * - Accepts input text from user.
+ * - Displays placeholder when empty.
+ * - Emits text changes via onValueChange callback.
  */
 @Composable
-fun HeaderRow(navController: NavController) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Popular Products",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = "See All",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 14.sp,
-            modifier = Modifier.clickable { navController.navigate(Screen.Discover.route) }
-        )
-    }
+fun SearchBar(value: String, onValueChange: (String) -> Unit) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        decorationBox = { innerTextField ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Search icon on left
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+
+                // Input area + placeholder text
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) {
+                        Text(
+                            "Search for products...",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        }
+    )
 }
