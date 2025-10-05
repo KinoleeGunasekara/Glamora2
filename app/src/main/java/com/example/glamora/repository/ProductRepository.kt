@@ -3,6 +3,7 @@ package com.example.glamora.repository
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import com.example.glamora.api.ApiService
 import com.example.glamora.data.Product
 import com.google.gson.Gson
@@ -11,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Helper function to check for internet connectivity.
+ * Helper function to check if the device has an active internet connection.
  */
 fun isNetworkAvailable(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -23,54 +24,72 @@ fun isNetworkAvailable(context: Context): Boolean {
 }
 
 /**
- * Repository handles fetching product data from:
- * 1. API (Retrofit) when online
- * 2. Local JSON file (assets/products.json) when offline
+ * Repository to fetch product data from multiple sources:
+ * 1. Public API (primary)
+ * 2. External JSON (fallback)
+ * 3. Local JSON (offline backup)
  */
 class ProductRepository(private val context: Context) {
 
-    // In-memory cache for quick product lookup
+    // In-memory cache used for fast lookup (e.g., when viewing details)
     private val products = mutableListOf<Product>()
 
     /**
-     * Fetch products:
-     * - Prefer API if online
-     * - If API fails or offline → load from assets (products.json)
+     * Loads products using the best available source.
+     * Always saves successfully loaded data into the cache for product detail lookup.
      */
     suspend fun getProducts(): List<Product> = withContext(Dispatchers.IO) {
         if (isNetworkAvailable(context)) {
             try {
+                // ---  Try Public API first ---
                 val apiProducts = ApiService.productApi.getProducts()
                 saveProductsToCache(apiProducts)
-                apiProducts
-            } catch (e: Exception) {
-                // Fallback to local file if API call fails
-                loadProductsFromAssets()
+                Log.d("ProductRepository", "Loaded data from Public API")
+                return@withContext apiProducts
+            } catch (apiError: Exception) {
+                Log.e("ProductRepository", "API failed, trying External JSON", apiError)
+                try {
+                    // ---  Fallback: External JSON (GitHub-hosted) ---
+                    val externalProducts = ApiService.productApi.getExternalJson()
+                    saveProductsToCache(externalProducts)
+                    Log.d("ProductRepository", "Loaded data from External JSON")
+                    return@withContext externalProducts
+                } catch (jsonError: Exception) {
+                    // ---  Final Fallback: Local JSON ---
+                    Log.e("ProductRepository", "External JSON failed, using Local JSON", jsonError)
+                    val localProducts = loadProductsFromAssets()
+                    saveProductsToCache(localProducts) // FIX: Cache local data
+                    return@withContext localProducts
+                }
             }
         } else {
-            // No internet, load offline data
-            loadProductsFromAssets()
+            // --- OFFLINE MODE ---
+            Log.w("ProductRepository", "Offline mode: loading from Local JSON")
+            val localProducts = loadProductsFromAssets()
+            saveProductsToCache(localProducts) //  FIX: Cache local data
+            return@withContext localProducts
         }
     }
 
     /**
-     * Load products from local JSON file in assets folder.
-     * File name: products.json (make sure it exists in app/src/main/assets/)
+     * Reads product data from assets/products.json.
+     * This file should exist under app/src/main/assets/.
      */
     private fun loadProductsFromAssets(): List<Product> {
         return try {
-            val json = context.assets.open("products.json") // ✅ Correct filename
-                .bufferedReader().use { it.readText() }
-
+            val json = context.assets.open("products.json").bufferedReader().use { it.readText() }
             val type = object : TypeToken<List<Product>>() {}.type
-            Gson().fromJson<List<Product>>(json, type)
+            val localProducts = Gson().fromJson<List<Product>>(json, type)
+            Log.d("ProductRepository", "Loaded data from Local JSON: ${localProducts.size} items")
+            localProducts
         } catch (e: Exception) {
-            emptyList() // Return empty list if parsing fails
+            Log.e("ProductRepository", "Failed to load Local JSON", e)
+            emptyList()
         }
     }
 
     /**
-     * Save products to in-memory cache for detail lookup.
+     * Caches products in memory so ProductDetailScreen can find them quickly by ID.
      */
     private fun saveProductsToCache(products: List<Product>) {
         this.products.clear()
@@ -78,10 +97,14 @@ class ProductRepository(private val context: Context) {
     }
 
     /**
-     * Get a single product by ID from the in-memory cache.
+     * Returns a product from the in-memory cache by its ID.
      */
     fun getProductById(id: Int?): Product? {
         if (id == null) return null
-        return products.find { it.id == id }
+        val found = products.find { it.id == id }
+        if (found == null) {
+            Log.w("ProductRepository", "Product with ID=$id not found in cache.")
+        }
+        return found
     }
 }
