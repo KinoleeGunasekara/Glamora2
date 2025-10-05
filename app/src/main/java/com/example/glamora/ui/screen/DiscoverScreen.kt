@@ -30,6 +30,7 @@ import com.example.glamora.data.Product
 import com.example.glamora.ui.component.BottomBar
 import com.example.glamora.ui.component.ProductCard
 import com.example.glamora.ui.navigation.Screen
+import com.example.glamora.viewmodel.CartViewModel // REQUIRED IMPORT
 import com.example.glamora.viewmodel.ProductUiState
 import com.example.glamora.viewmodel.ProductViewModel
 
@@ -37,7 +38,11 @@ import com.example.glamora.viewmodel.ProductViewModel
 private const val DISCOVER_TITLE = "Discover"
 
 @Composable
-fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
+fun DiscoverScreen(
+    navController: NavController,
+    viewModel: ProductViewModel,
+    cartViewModel: CartViewModel // Must be passed from NavGraph
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     val configuration = LocalConfiguration.current
@@ -48,7 +53,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
     var selectedCategory by remember { mutableStateOf(categories.first()) }
     var searchQuery by remember { mutableStateOf("") }
 
-    // Defines a vertical color gradient for the entire background, blending surface and background colors for neatness
+    // Defines a vertical color gradient for the entire background.
     val fullScreenBackgroundBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
@@ -64,7 +69,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(brush = fullScreenBackgroundBrush) // Applied the gradient to the entire screen
+                .background(brush = fullScreenBackgroundBrush) // Applies the background gradient
         ) {
             // --------------------------
             // 1. Top Section (Header & Search)
@@ -72,12 +77,12 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 20.dp) // Spacing before content below
+                    .padding(bottom = 20.dp)
             ) {
-                // Renders the main "Discover" title, now smaller and centered
+                // Renders the main "Discover" title
                 SimpleHeaderSection(modifier = Modifier.padding(top = 24.dp, bottom = 24.dp))
 
-                // Renders the search bar, now wrapped in a Card for subtle elevation
+                // Renders the elevated search bar
                 SearchBarExact(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -89,7 +94,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
             // 2. Remaining Sections (Banner, Categories, Grid)
             // --------------------------
 
-            Spacer(modifier = Modifier.height(20.dp)) // Added consistent spacing
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Clean Banner, visible only in portrait mode
             if (!isLandscape) {
@@ -110,6 +115,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
             // Product Grid / Dynamic content loading and filtering logic
             when (uiState) {
                 is ProductUiState.Loading -> {
+                    // Displays a circular indicator while products are loading
                     Box(
                         Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -118,6 +124,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
                     }
                 }
                 is ProductUiState.Error -> {
+                    // Displays an error message if product loading fails
                     Text(
                         text = (uiState as ProductUiState.Error).message,
                         color = MaterialTheme.colorScheme.error,
@@ -127,7 +134,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
                 is ProductUiState.Success -> {
                     val products = (uiState as ProductUiState.Success).products
 
-                    // Filters products based on selected category and search query
+                    // Filters the product list based on the selected category and the search query
                     val filteredProducts = products.filter { product ->
                         val categoryMatch = selectedCategory == "All" ||
                                 product.category.equals(selectedCategory, ignoreCase = true)
@@ -152,6 +159,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
                             ProductGrid(
                                 filteredProducts,
                                 navController,
+                                cartViewModel, // Passing ViewModel to the grid
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight()
@@ -162,6 +170,7 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
                         ProductGrid(
                             filteredProducts,
                             navController,
+                            cartViewModel, // Passing ViewModel to the grid
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp)
@@ -177,31 +186,31 @@ fun DiscoverScreen(navController: NavController, viewModel: ProductViewModel) {
 // Simple Header Section
 // --------------------------
 /**
- * Renders the main screen title, now smaller and centered horizontally.
+ * Renders the main screen title, centered horizontally.
  */
 @Composable
 private fun SimpleHeaderSection(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center // Centers the title horizontally and vertically
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = DISCOVER_TITLE,
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = 30.sp, // Reduced font size
+                fontSize = 30.sp,
                 letterSpacing = 0.sp,
-                color = MaterialTheme.colorScheme.onBackground // Use contrasting color against light background
+                color = MaterialTheme.colorScheme.onBackground
             )
         )
     }
 }
 
 // --------------------------
-// Search Bar (Elevated for visibility, slightly darker color)
+// Search Bar (Elevated for visibility)
 // --------------------------
 /**
- * Renders the search bar wrapped in a Card for subtle elevation and a slightly darker container color.
+ * Renders the elevated search bar using a Card wrapper for visual separation.
  */
 @Composable
 private fun SearchBarExact(
@@ -214,9 +223,8 @@ private fun SearchBarExact(
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        // Use a small elevation to make the bar slightly visible against the background
+        // Provides subtle elevation for the search bar
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        // Changed containerColor to surfaceVariant for a slightly darker shade
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         TextField(
@@ -236,20 +244,17 @@ private fun SearchBarExact(
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             },
-            // The TextField itself uses a transparent background/shape because the Card is providing the visual background
+            // Makes the internal TextField background transparent to show the Card's background
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
-                // Ensure TextField container colors are transparent or match the card
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 cursorColor = MaterialTheme.colorScheme.primary,
-                // Setting indicators to Transparent to remove the underline completely
+                // Removes the default underline indicator
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
             ),
-            modifier = Modifier.fillMaxSize() // Fills the Card space
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -258,7 +263,7 @@ private fun SearchBarExact(
 // Clean Banner
 // --------------------------
 /**
- * Displays a clean promotional banner card using a local image resource.
+ * Displays a promotional banner card using a local image resource.
  */
 @Composable
 private fun CleanBanner(modifier: Modifier = Modifier) {
@@ -269,13 +274,14 @@ private fun CleanBanner(modifier: Modifier = Modifier) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Note: R.drawable.banner must exist in your project
+            // Renders the banner image, assuming R.drawable.banner exists
             Image(
                 painter = painterResource(id = R.drawable.banner),
                 contentDescription = "Promotional Banner",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+            // Subtle overlay for visual effect
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -289,7 +295,7 @@ private fun CleanBanner(modifier: Modifier = Modifier) {
 // Enhanced Category Chips
 // --------------------------
 /**
- * Renders a horizontally scrollable row of category filter chips with gradient styling for selection.
+ * Renders a horizontally scrollable row of category filter chips.
  */
 @Composable
 fun EnhancedCategoryChips(
@@ -310,6 +316,7 @@ fun EnhancedCategoryChips(
         categories.forEach { category ->
             val isSelected = selectedCategory == category
 
+            // Outer box creates the background for the selected state gradient
             Box(
                 modifier = Modifier
                     .background(
@@ -326,17 +333,17 @@ fun EnhancedCategoryChips(
                     onClick = { onSelect(category) },
                     label = {
                         Text(
+                            // Capitalizes the first letter for display
                             category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             style = MaterialTheme.typography.titleMedium,
                             color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                         )
                     },
+                    // Makes the chip body transparent since the outer Box provides the background/gradient
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = Color.Transparent,
                         containerColor = Color.Transparent,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        labelColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = null,
                     modifier = Modifier.heightIn(min = 40.dp)
@@ -350,12 +357,13 @@ fun EnhancedCategoryChips(
 // Product Grid
 // --------------------------
 /**
- * Displays filtered products in a lazy vertical grid.
+ * Displays filtered products in a lazy vertical grid and handles the product card actions.
  */
 @Composable
 fun ProductGrid(
     filteredProducts: List<Product>,
     navController: NavController,
+    cartViewModel: CartViewModel, // Accepts the ViewModel to perform cart actions
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -368,8 +376,15 @@ fun ProductGrid(
         items(filteredProducts) { product ->
             ProductCard(
                 product = product,
+                // Card click navigates to the detailed screen
                 onClick = { navController.navigate(Screen.ProductDetail.createRoute(product.id)) },
-                onCartClick = { navController.navigate(Screen.Cart.route) }
+                // Cart icon click performs two actions:
+                onCartClick = {
+                    // 1. Adds the product to the cart
+                    cartViewModel.addItem(product)
+                    // 2. Navigates immediately to the Cart screen
+                    navController.navigate(Screen.Cart.route)
+                }
             )
         }
     }
