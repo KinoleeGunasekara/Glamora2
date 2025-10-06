@@ -5,49 +5,77 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.glamora.data.Product
 import com.example.glamora.repository.ProductRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.example.glamora.util.ConnectionState
+import com.example.glamora.util.NetworkMonitor
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel for managing product-related data.
- * Uses ProductRepository for fetching products (online/offline).
+ * ViewModel that manages product data and reacts to network changes.
+ * - Fetches from API / External / Local JSON automatically.
+ * - Exposes current connection state and product list to the UI.
  */
-class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
+class ProductViewModel(
+    private val repository: ProductRepository,
+    networkMonitor: NetworkMonitor
+) : ViewModel() {
 
-    // Backing property for UI state (Loading / Success / Error)
     private val _uiState = MutableStateFlow<ProductUiState>(ProductUiState.Loading)
-    val uiState: StateFlow<ProductUiState> = _uiState
+    val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
-    // Holds a single product for the ProductDetailScreen
     private val _selectedProduct = MutableStateFlow<Product?>(null)
-    val selectedProduct: StateFlow<Product?> = _selectedProduct
+    val selectedProduct: StateFlow<Product?> = _selectedProduct.asStateFlow()
+
+    // Observe network changes as StateFlow
+    val networkState: StateFlow<ConnectionState> = networkMonitor.isConnected
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ConnectionState.Unavailable
+        )
 
     init {
-        Log.d("ProductViewModel", "ViewModel initialized, loading products...")
-        loadProducts()
+        Log.d("ProductViewModel", "Initialized, observing network changes...")
+        observeNetworkAndLoad()
     }
 
     /**
-     * Loads products asynchronously from the repository.
-     * - Shows Loading first
-     * - If success → updates UI with product list
-     * - If error → shows error message
+     * Watches network state and triggers data fetching accordingly.
      */
-    fun loadProducts() {
+    private fun observeNetworkAndLoad() {
+        viewModelScope.launch {
+            networkState.collectLatest { state ->
+                when (state) {
+                    is ConnectionState.Available -> loadProducts(forceOnline = true)
+                    is ConnectionState.Unavailable -> loadProducts(forceOnline = false)
+                }
+            }
+        }
+    }
+
+    /**
+     * Loads products asynchronously.
+     * @param forceOnline true → use API/external; false → local JSON only.
+     */
+    fun loadProducts(forceOnline: Boolean = true) {
         viewModelScope.launch {
             _uiState.value = ProductUiState.Loading
             try {
-                val products = repository.getProducts()
+                val products = if (forceOnline) {
+                    repository.getProducts()
+                } else {
+                    repository.loadProductsFromAssets()
+                }
                 _uiState.value = ProductUiState.Success(products)
             } catch (e: Exception) {
+                Log.e("ProductViewModel", "Error loading products", e)
                 _uiState.value = ProductUiState.Error("Failed to load products: ${e.message}")
             }
         }
     }
 
     /**
-     * Loads a single product by its ID from repository cache.
+     * Returns product by ID (from in-memory cache).
      */
     fun loadProductById(productId: Int) {
         _selectedProduct.value = repository.getProductById(productId)
