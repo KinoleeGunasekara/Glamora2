@@ -16,6 +16,7 @@ import com.example.glamora.local.AppDatabase
 import com.example.glamora.repository.CartRepository
 import com.example.glamora.repository.ProductRepository
 import com.example.glamora.ui.screen.*
+import com.example.glamora.util.NetworkMonitor // FIX: Import NetworkMonitor
 import com.example.glamora.viewmodel.CartViewModel
 import com.example.glamora.viewmodel.CartViewModelFactory
 import com.example.glamora.viewmodel.ProductViewModel
@@ -33,6 +34,8 @@ sealed class Screen(val route: String) {
     object ProductDetail : Screen("product_detail/{productId}") {
         fun createRoute(productId: Int) = "product_detail/$productId"
     }
+    // NEW: Add the Payment screen route here
+    object Payment : Screen("payment")
 }
 
 @Composable
@@ -41,6 +44,10 @@ fun GlamoraNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+
+    // --- 0. NETWORK MONITOR ---
+    // FIX: Instantiate the NetworkMonitor
+    val networkMonitor = remember { NetworkMonitor(context) }
 
     // --- 1. ROOM DATABASE SETUP ---
     // Creates the database instance, ensuring it is built only once using remember.
@@ -58,7 +65,8 @@ fun GlamoraNavGraph(
     val productRepository = remember { ProductRepository(context) } // Uses context for assets/network check
 
     // --- 3. VIEWMODEL FACTORIES ---
-    val productViewModelFactory = remember { ProductViewModelFactory(productRepository) }
+    // FIX: Update ProductViewModelFactory to pass the NetworkMonitor
+    val productViewModelFactory = remember { ProductViewModelFactory(productRepository, networkMonitor) }
     val cartViewModelFactory = remember { CartViewModelFactory(cartRepository) }
 
     // --- 4. VIEWMODELS ---
@@ -78,7 +86,6 @@ fun GlamoraNavGraph(
             HomeScreen(
                 navController = navController,
                 viewModel = productViewModel,
-                // FIX: Pass the cartViewModel instance here
                 cartViewModel = cartViewModel
             )
         }
@@ -88,7 +95,6 @@ fun GlamoraNavGraph(
             DiscoverScreen(
                 navController = navController,
                 viewModel = productViewModel,
-                // FIX: Pass the cartViewModel instance here
                 cartViewModel = cartViewModel
             )
         }
@@ -114,6 +120,14 @@ fun GlamoraNavGraph(
                 navController = navController,
                 productId = productId,
                 productViewModel = productViewModel,
+                cartViewModel = cartViewModel
+            )
+        }
+
+        // NEW: Payment Screen
+        composable(Screen.Payment.route) {
+            PaymentScreen(
+                navController = navController,
                 cartViewModel = cartViewModel
             )
         }
