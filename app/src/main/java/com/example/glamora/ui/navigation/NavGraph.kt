@@ -10,17 +10,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.room.Room
-
 import com.example.glamora.local.AppDatabase
 import com.example.glamora.repository.CartRepository
 import com.example.glamora.repository.ProductRepository
 import com.example.glamora.ui.screen.*
-import com.example.glamora.util.NetworkMonitor // FIX: Import NetworkMonitor
+import com.example.glamora.util.NetworkMonitor
 import com.example.glamora.viewmodel.CartViewModel
 import com.example.glamora.viewmodel.CartViewModelFactory
+import com.example.glamora.viewmodel.LocationViewModel
 import com.example.glamora.viewmodel.ProductViewModel
 import com.example.glamora.viewmodel.ProductViewModelFactory
+import com.example.glamora.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 sealed class Screen(val route: String) {
@@ -31,11 +31,14 @@ sealed class Screen(val route: String) {
     object Discover : Screen("discover")
     object Cart : Screen("cart")
     object Profile : Screen("profile")
+    object CameraSensor : Screen("camera_sensor")
+    object Address : Screen("address")
     object ProductDetail : Screen("product_detail/{productId}") {
         fun createRoute(productId: Int) = "product_detail/$productId"
     }
-    // NEW: Add the Payment screen route here
     object Payment : Screen("payment")
+    object OrderHistory : Screen("order_history") // Added Order History route
+    object PaymentMethods : Screen("payment_methods") // NEW: Payment Methods screen route
 }
 
 @Composable
@@ -45,36 +48,31 @@ fun GlamoraNavGraph(
 ) {
     val context = LocalContext.current
 
-    // --- 0. NETWORK MONITOR ---
-    // FIX: Instantiate the NetworkMonitor
+    // Network monitor for connectivity checking
     val networkMonitor = remember { NetworkMonitor(context) }
 
-    // --- 1. ROOM DATABASE SETUP ---
-    // Creates the database instance, ensuring it is built only once using remember.
+    // Database instance using singleton pattern
     val db = remember {
-        Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "glamora_db"
-        ).build()
+        AppDatabase.getDatabase(context)
     }
 
-    // --- 2. REPOSITORIES ---
-    // Creates the DAO and Repositories, passing the DAO to CartRepository.
-    val cartRepository = remember { CartRepository(db.cartDao()) }
-    val productRepository = remember { ProductRepository(context) } // Uses context for assets/network check
+    // Updated CartRepository to include OrderDao and SavedCardDao for complete e-commerce functionality
+    val cartRepository = remember {
+        CartRepository(db.cartDao(), db.orderDao(), db.savedCardDao()) // Added savedCardDao for payment card management
+    }
+    val productRepository = remember { ProductRepository(context) }
 
-    // --- 3. VIEWMODEL FACTORIES ---
-    // FIX: Update ProductViewModelFactory to pass the NetworkMonitor
+    // ViewModel factories with updated CartRepository
     val productViewModelFactory = remember { ProductViewModelFactory(productRepository, networkMonitor) }
     val cartViewModelFactory = remember { CartViewModelFactory(cartRepository) }
 
-    // --- 4. VIEWMODELS ---
-    // Instantiates ViewModels using the respective factories.
+    // ViewModels - CartViewModel now handles both cart and order operations
     val productViewModel: ProductViewModel = viewModel(factory = productViewModelFactory)
-    val cartViewModel: CartViewModel = viewModel(factory = cartViewModelFactory) // The CartViewModel instance
+    val cartViewModel: CartViewModel = viewModel(factory = cartViewModelFactory) // Handles cart + orders
+    val profileViewModel: ProfileViewModel = viewModel()
+    val locationViewModel: LocationViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
 
         // Placeholder for Authentication and Splash screens
         composable(Screen.Splash.route) { SplashScreen(navController) }
@@ -101,13 +99,35 @@ fun GlamoraNavGraph(
 
         // Cart Screen
         composable(Screen.Cart.route) {
-            CartScreen(navController = navController, cartViewModel = cartViewModel)
+            CartScreen(
+                navController = navController,
+                cartViewModel = cartViewModel // Pass the created ViewModel
+            )
         }
+
 
         // Profile Screen
         composable(Screen.Profile.route) {
-            ProfileScreen(navController = navController, auth = auth)
+            // FIX: Pass the profileViewModel instance here
+            ProfileScreen(
+                navController = navController,
+                auth = auth,
+                profileViewModel = profileViewModel
+            )
         }
+
+        composable(Screen.CameraSensor.route) {
+            CameraSensorScreen(navController, profileViewModel)
+        }
+
+        // NEW: Address Screen
+        composable(Screen.Address.route) {
+            AddressScreen(
+                navController = navController,
+                locationViewModel = locationViewModel
+            )
+        }
+
 
         // Product Detail Screen
         composable(
@@ -129,6 +149,22 @@ fun GlamoraNavGraph(
             PaymentScreen(
                 navController = navController,
                 cartViewModel = cartViewModel
+            )
+        }
+
+        // Order History Screen - reuses existing CartViewModel
+        composable(Screen.OrderHistory.route) {
+            OrderHistoryScreen(
+                navController = navController,
+                cartViewModel = cartViewModel // Reuses CartViewModel for order data
+            )
+        }
+
+        // NEW: Payment Methods Screen
+        composable(Screen.PaymentMethods.route) {
+            PaymentMethodsScreen(
+                navController = navController,
+                cartViewModel = cartViewModel // Passes CartViewModel to manage saved cards
             )
         }
     }
