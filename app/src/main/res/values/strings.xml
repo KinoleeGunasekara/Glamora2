@@ -1,35 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Information -->
     <string name="app_name">Glamora</string>
 
-    <!-- Splash Screen -->
     <string name="splash_image_content_description">Main splash screen image of a model</string>
     <string name="splash_tagline">Dress Like\nNever Before</string>
     <string name="splash_subtext">Where Every Click is a Step Closer\nto Your Perfect Purchase!</string>
     <string name="splash_button_text">Swipe To Get Started</string>
     <string name="arrow_forward_icon_content_description">Arrow pointing forward</string>
 
-    <!-- Branding -->
     <string name="brand_name">GLAMORA</string>
 
-    <!-- Common Fields -->
-    <string name="name">Name</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
     <string name="confirm_password">Confirm Password</string>
-
-    <!-- Login -->
+    <string name="forgot_password">Forgot Password ?</string>
     <string name="login">Login</string>
-    <string name="new_user">New User? Sign Up</string>
-    <string name="hello">Hello!</string>
-    <string name="welcome_message">Welcome to Glamora</string>
 
-    <!-- Register -->
+
+    <string name="welcome_headline">Discover Your Style!</string>
+    <string name="welcome_subheadline">Sign in for exclusive fashion trends.</string>
+    <string name="new_here">New here?</string>
+    <string name="create_account">Create an account.</string>
+    <string name="or_continue_with">Or continue with</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="default_web_client_id">360440547337-m6sfa121j6o6g6jc5g1lhkmt4go7as4c.apps.googleusercontent.com</string>
+
+    <string name="register_subheadline">Create an account to explore fashion with Glamora</string>
+    <string name="label_name">Name</string>
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="toggle_password_visibility">Toggle Password Visibility</string>
+    <string name="label_gender">Gender</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_other">Other</string>
+    <string name="label_age">Age</string>
+    <string name="select_age">Select Age</string>
+    <string name="age_under_18">Under 18</string>
+    <string name="age_18_24">18-24</string>
+    <string name="age_25_34">25-34</string>
+    <string name="age_35_44">35-44</string>
+    <string name="age_45_plus">45+</string>
+    <string name="accept_terms">I accept the Terms &amp; Conditions</string>
     <string name="register">Register</string>
-    <string name="already_have_account">Already have an account? Login</string>
+    <string name="already_have_account">Already have an account?</string>
 
-    <!-- Product Detail Screen -->
+    <string name="category_tops">Tops</string>
+    <string name="category_dresses">Dresses</string>
+    <string name="category_bags">Bags</string>
+    <string name="category_shoes">Shoes</string>
+    <string name="category_jewelry">Jewelry</string>
+    <string name="search">Search</string>
+    <string name="search_products">Search products</string>
+    <string name="popular_products">Popular Products</string>
+    <string name="see_all">See All</string>
+    <string name="promotional_banner">Promotional Banner</string>
+
+
+    <string name="discover_title">Discover</string>
+    <string name="discover_subtitle">Find your perfect style</string>
+    <string name="search_content_desc">Search</string>
+    <string name="filter_content_desc">Filter</string>
+    <string name="promotional_banner_desc">Promotional Banner</string>
+    <string name="category_women">Women</string>
+    <string name="category_men">Men</string>
+    <string name="category_accessories">Accessories</string>
+
     <string name="top_product_name">Elegant Pink Dress</string>
     <string name="product_category_fashion">Women’s Fashion</string>
     <string name="product_description_short">This elegant pink dress is perfect for any occasion. Designed with premium fabric, it ensures comfort while maintaining a chic look.</string>
@@ -43,16 +76,14 @@
     <string name="show_less">Show less</string>
     <string name="add_to_cart">Add to Cart</string>
     <string name="offer_text">Special 50% off limited time offer!</string>
+    <string name="description">Description</string>
+    <string name="loading">Loading...</string>
 
-    <!-- Quantity Buttons -->
     <string name="increase_quantity_desc">Increase quantity</string>
     <string name="decrease_quantity_desc">Decrease quantity</string>
+    <string name="back_button_desc">Go back</string>
 
-    <!-- Icons Content Descriptions -->
-    <string name="offer_icon_desc">Discount offer icon</string>
-    <string name="back_button_desc">Back button</string>
 
-    <!-- Cart Screen -->
     <string name="cart_title">Your Cart</string>
     <string name="back_button">Back</string>
     <string name="cart_icon_content_description">Go to cart</string>
@@ -64,10 +95,7 @@
     <string name="delivery">Delivery</string>
     <string name="total">Total</string>
     <string name="checkout">Checkout</string>
-
-    <!-- Profile Screen -->
-
-    <string name="profile_screen_title_v2">Profile</string>
+    <string name="cart_empty">Your cart is empty. Start shopping!</string> <string name="remove_item">Remove Item</string> <string name="profile_screen_title_v2">Profile</string>
     <string name="profile_image_desc_v2">User\'s profile picture</string>
     <string name="edit_profile_icon_desc_v2">Edit profile picture</string>
     <string name="profile_name_v2">Jack William</string>
@@ -82,5 +110,36 @@
     <string name="menu_logout">Log out</string>
     <string name="menu_address_v2">Address</string>
 
+    <!-- Screen Titles -->
+    <string name="title_add_card_details">Add Card Details</string>
+    <string name="title_payment_confirmed">Payment Confirmed!</string>
 
+    <!-- UI Labels and Hints -->
+    <string name="label_choose_card">Choose Card</string>
+    <string name="label_card_holder_name">Card Holder Name</string>
+    <string name="hint_name">Ex. John Doe</string>
+    <string name="label_card_number">Card Number</string>
+    <string name="hint_card_number">XXXX XXXX XXXX XXXX</string>
+    <string name="label_expiry_date">Expiry Date</string>
+    <string name="hint_expiry_date">MM/YYYY</string>
+    <string name="label_cvv">CVV/CVC</string>
+    <string name="hint_cvv">XXX</string>
+    <string name="checkbox_save_card">Save this card information</string>
+
+    <!-- Buttons -->
+    <string name="button_pay_now">PAY NOW</string>
+    <string name="button_ok">OK</string>
+
+    <!-- Transaction Details (Success Dialog) -->
+    <string name="label_amount">Amount</string>
+    <string name="label_date">Date</string>
+    <string name="label_transaction_id">Transaction ID</string>
+    <string name="format_currency_amount">\$%.2f</string>
+
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="content_desc_back">Back button</string>
+    <string name="content_desc_card_icon">Credit card icon</string>
+    <string name="content_desc_calendar">Calendar icon</string>
+    <string name="content_desc_help">Help icon for CVV</string>
+    <string name="content_desc_success_check">Payment success checkmark</string>
 </resources>
