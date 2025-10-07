@@ -1,5 +1,11 @@
-package com.example.glamora.ui.screens
+package com.example.glamora.ui.screen
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.provider.ContactsContract
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,10 +23,12 @@ import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -28,11 +36,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.glamora.R
 import com.example.glamora.ui.navigation.Screen
 import com.example.glamora.ui.theme.Typography
 import com.example.glamora.ui.component.BottomBar
+import com.example.glamora.viewmodel.ProfileViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -40,10 +52,51 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
+fun ProfileScreen(
+    navController: NavHostController,
+    auth: FirebaseAuth,
+    profileViewModel: ProfileViewModel = viewModel() // This receives the ViewModel instance
+) {
     val context = LocalContext.current
 
-    // Correct GoogleSignInClient setup
+    // --- START: INVITE FRIENDS LOGIC ---
+
+    // Launcher for picking a contact. It receives the contact's URI.
+    val contactPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickContact()
+    ) { contactUri ->
+        if (contactUri != null) {
+            // A contact was selected. Query for the display name.
+            context.contentResolver.query(contactUri, arrayOf(ContactsContract.Contacts.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val contactName = cursor.getString(0)
+                    Toast.makeText(context, "You selected $contactName", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Toast.makeText(context, "No contact selected.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Launcher for requesting READ_CONTACTS permission.
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // If permission was just granted, launch the contact picker.
+            contactPickerLauncher.launch(null)
+        } else {
+            Toast.makeText(context, "Read Contacts permission denied.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // --- END: INVITE FRIENDS LOGIC ---
+
+    LaunchedEffect(key1 = true) {
+        profileViewModel.loadNameEmailFromLocal()
+        profileViewModel.loadPhotoFromLocal()
+    }
+
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
@@ -63,8 +116,8 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigate(Screen.Discover.route) {
-                            popUpTo(Screen.Discover.route) { inclusive = true }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
                         }
                     }) {
                         Icon(
@@ -96,13 +149,22 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                     .size(120.dp)
                     .clip(CircleShape)
                     .background(Color.Gray)
+                    .clickable { navController.navigate(Screen.CameraSensor.route) }
             ) {
-                Image(
+                profileViewModel.profilePhoto.value?.let { bitmap ->
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = stringResource(R.string.profile_image_desc_v2),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: Image(
                     painter = painterResource(id = R.drawable.profile),
                     contentDescription = stringResource(R.string.profile_image_desc_v2),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -110,7 +172,7 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
                         .size(32.dp)
-                        .clickable { }
+                        .clickable { navController.navigate(Screen.CameraSensor.route) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -126,13 +188,13 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = stringResource(R.string.profile_name_v2),
+                text = profileViewModel.name.value.ifEmpty { "Your Name" },
                 style = Typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = stringResource(R.string.profile_email_v2),
+                text = profileViewModel.email.value.ifEmpty { "your.email@example.com" },
                 style = Typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -149,32 +211,47 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                 ProfileMenuItem(
                     icon = Icons.Default.PersonOutline,
                     label = stringResource(R.string.menu_edit_profile_v2),
-                    onClick = { }
+                    onClick = { navController.navigate(Screen.CameraSensor.route) }
                 )
                 ProfileMenuItem(
                     icon = Icons.Default.CreditCard,
                     label = stringResource(R.string.menu_payment_method_v2),
-                    onClick = { }
+                    onClick = { /* TODO */ }
                 )
                 ProfileMenuItem(
                     icon = Icons.Default.LocationOn,
                     label = stringResource(R.string.menu_address_v2),
-                    onClick = { }
+                    onClick = { navController.navigate(Screen.Address.route) }
                 )
                 ProfileMenuItem(
                     icon = Icons.AutoMirrored.Filled.ReceiptLong,
                     label = stringResource(R.string.menu_order_history_v2),
-                    onClick = { }
+                    onClick = { navController.navigate("order_history") }
                 )
                 ProfileMenuItem(
-                    icon = Icons.Default.PersonOutline,
+                    icon = Icons.Default.PeopleOutline, // Using a more appropriate icon
                     label = stringResource(R.string.menu_invite_friends_v2),
-                    onClick = { }
+                    onClick = {
+                        // This logic runs when the user clicks "Invite Friends"
+                        when (ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.READ_CONTACTS
+                        )) {
+                            PackageManager.PERMISSION_GRANTED -> {
+                                // Permission is already granted, so launch the picker.
+                                contactPickerLauncher.launch(null)
+                            }
+                            else -> {
+                                // Permission is not granted, so request it.
+                                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            }
+                        }
+                    }
                 )
                 ProfileMenuItem(
                     icon = Icons.AutoMirrored.Filled.HelpOutline,
                     label = stringResource(R.string.menu_help_center_v2),
-                    onClick = { }
+                    onClick = { /* TODO */ }
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
@@ -184,11 +261,8 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                     icon = Icons.AutoMirrored.Filled.Logout,
                     label = stringResource(R.string.menu_logout),
                     onClick = {
-                        // Sign out from Firebase
                         auth.signOut()
-                        // Sign out from Google
                         googleSignInClient.signOut()
-                        // Navigate to LoginScreen and clear backstack
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
