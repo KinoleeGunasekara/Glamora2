@@ -1,7 +1,6 @@
 package com.example.glamora.ui.screen
 
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,35 +11,38 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.glamora.R
+import com.example.glamora.local.CartItemEntity
 import com.example.glamora.ui.component.BottomBar
+import com.example.glamora.ui.component.ProductImageLoader // Use the shared image loader
 import com.example.glamora.ui.navigation.Screen
+import com.example.glamora.viewmodel.CartViewModel // Import the new ViewModel
 
-data class CartItemModel(
-    val id: Int,
-    val name: String,
-    val price: Double,
-    val imageResId: Int
-)
-
-val mockCartItems = listOf(
-    CartItemModel(1, "Black Cherry Midi Dress", 65.0, R.drawable.dress2),
-    CartItemModel(2, "Burgundy Velvet Heels", 89.0, R.drawable.heels1)
-)
+// NOTE: mockCartItems and CartItemModel are now removed, as data comes from CartItemEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(navController: androidx.navigation.NavController) {
-    val subtotal = mockCartItems.sumOf { it.price }
+fun CartScreen(
+    navController: NavController,
+    cartViewModel: CartViewModel // Inject CartViewModel
+) {
+    // REQUIREMENT: Read data from a local data source
+    // Collect the data stream (Flow) from the Room Database
+    val cartItems by cartViewModel.cartItems.collectAsState()
+    val subtotal by cartViewModel.cartTotal.collectAsState()
+
+    // Taxes and delivery are hardcoded as per your original logic
     val taxes = 10.00
     val delivery = 8.00
     val total = subtotal + taxes + delivery
@@ -80,7 +82,22 @@ fun CartScreen(navController: androidx.navigation.NavController) {
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        if (isLandscape) {
+        if (cartItems.isEmpty()) {
+            // Show empty cart message when no items are collected from Room
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.cart_empty),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        } else if (isLandscape) {
+            // Landscape Layout
             Row(
                 Modifier
                     .fillMaxSize()
@@ -93,17 +110,26 @@ fun CartScreen(navController: androidx.navigation.NavController) {
                         .padding(end = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(mockCartItems) { item ->
+                    // Iterate through the live data from Room
+                    items(cartItems, key = { it.productId }) { item ->
                         CartItem(
                             product = item,
-                            quantity = 1,
-                            onQuantityChange = {}
+                            onQuantityChange = { change ->
+                                cartViewModel.updateQuantity(item, change)
+                            },
+                            onRemove = {
+                                cartViewModel.removeItem(item)
+                            }
                         )
                     }
 
                     item {
                         TextButton(
-                            onClick = { /* no-op */ },
+                            onClick = {
+                                navController.navigate(Screen.Discover.route) {
+                                    popUpTo(Screen.Discover.route) { inclusive = true }
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
@@ -134,7 +160,8 @@ fun CartScreen(navController: androidx.navigation.NavController) {
 
                     item {
                         Button(
-                            onClick = { /* no-op */ },
+                            // UPDATED: Navigate to the Payment Screen
+                            onClick = { navController.navigate(Screen.Payment.route) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
@@ -146,6 +173,7 @@ fun CartScreen(navController: androidx.navigation.NavController) {
                 }
             }
         } else {
+            // Portrait Layout
             Column(
                 Modifier
                     .fillMaxSize()
@@ -158,17 +186,26 @@ fun CartScreen(navController: androidx.navigation.NavController) {
                 ) {
                     item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                    items(mockCartItems) { item ->
+                    // Iterate through the live data from Room
+                    items(cartItems, key = { it.productId }) { item ->
                         CartItem(
                             product = item,
-                            quantity = 1,
-                            onQuantityChange = {}
+                            onQuantityChange = { change ->
+                                cartViewModel.updateQuantity(item, change)
+                            },
+                            onRemove = {
+                                cartViewModel.removeItem(item)
+                            }
                         )
                     }
 
                     item {
                         TextButton(
-                            onClick = { /* no-op */ },
+                            onClick = {
+                                navController.navigate(Screen.Discover.route) {
+                                    popUpTo(Screen.Discover.route) { inclusive = true }
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
@@ -199,7 +236,8 @@ fun CartScreen(navController: androidx.navigation.NavController) {
 
                     item {
                         Button(
-                            onClick = { /* no-op */ },
+                            // UPDATED: Navigate to the Payment Screen
+                            onClick = { navController.navigate(Screen.Payment.route) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
@@ -214,11 +252,15 @@ fun CartScreen(navController: androidx.navigation.NavController) {
     }
 }
 
+// ----------------------------------------------------------------------------------
+// CartItem Composable (Uses CartItemEntity and calls ViewModel logic)
+// ----------------------------------------------------------------------------------
+
 @Composable
 fun CartItem(
-    product: CartItemModel,
-    quantity: Int,
-    onQuantityChange: (Int) -> Unit
+    product: CartItemEntity, // Now uses the Room Entity
+    onQuantityChange: (change: Int) -> Unit, // +1 for increase, -1 for decrease
+    onRemove: () -> Unit // Function to remove the item completely
 ) {
     Row(
         Modifier
@@ -228,26 +270,51 @@ fun CartItem(
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(product.imageResId),
-            contentDescription = product.name,
+        // Use the robust ProductImageLoader component
+        ProductImageLoader(
+            imageUrl = product.image,
+            contentDescription = product.title,
             modifier = Modifier
                 .size(80.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
+                .clip(RoundedCornerShape(12.dp))
         )
 
         Spacer(Modifier.width(16.dp))
 
         Column(Modifier.weight(1f)) {
-            Text(product.name, fontWeight = FontWeight.SemiBold)
+            Text(product.title, fontWeight = FontWeight.SemiBold)
             Text("$%.2f".format(product.price), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                QuantityButton("-", onClick = { /* no-op */ })
-                Text("$quantity", Modifier.padding(horizontal = 8.dp), fontWeight = FontWeight.Bold)
-                QuantityButton("+", onClick = { /* no-op */ })
+                // Decrease Quantity Button: Calls onQuantityChange(-1)
+                QuantityButton(
+                    symbol = "-",
+                    onClick = { onQuantityChange(-1) }
+                )
+                Text(
+                    text = "${product.quantity}",
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
+                // Increase Quantity Button: Calls onQuantityChange(1)
+                QuantityButton(
+                    symbol = "+",
+                    onClick = { onQuantityChange(1) }
+                )
             }
+        }
+
+        // Add a small remove/delete button
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.size(40.dp) // Increased from 24.dp to 40.dp
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_delete),
+                contentDescription = "Remove Item",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(28.dp) // Increased from default to make icon more visible
+            )
         }
     }
 }
