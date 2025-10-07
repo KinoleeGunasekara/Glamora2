@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -207,10 +208,11 @@ private fun SimpleHeaderSection(modifier: Modifier = Modifier) {
 }
 
 // --------------------------
-// Search Bar (Elevated for visibility)
+// Search Bar (Matching HomeScreen style)
 // --------------------------
 /**
- * Renders the elevated search bar using a Card wrapper for visual separation.
+ * Renders the search bar using the same design as HomeScreen.
+ * Uses Surface with rounded corners and BasicTextField for clean appearance.
  */
 @Composable
 private fun SearchBarExact(
@@ -218,44 +220,45 @@ private fun SearchBarExact(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        // Provides subtle elevation for the search bar
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    Surface(
+        shape = RoundedCornerShape(50),
+        tonalElevation = 4.dp,
+        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier.fillMaxWidth()
     ) {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    "Search anything, explore everything",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = "Search icon",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            },
-            // Makes the internal TextField background transparent to show the Card's background
-            shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                // Removes the default underline indicator
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-            modifier = Modifier.fillMaxSize()
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = LocalTextStyle.current.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp
+                ),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = "Search anything, explore everything",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -276,7 +279,7 @@ private fun CleanBanner(modifier: Modifier = Modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Renders the banner image, assuming R.drawable.banner exists
             Image(
-                painter = painterResource(id = R.drawable.banner),
+                painter = painterResource(id = R.drawable.bannerdiscover),
                 contentDescription = "Promotional Banner",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
