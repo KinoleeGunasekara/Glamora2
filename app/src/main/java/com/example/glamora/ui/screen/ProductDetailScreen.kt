@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.glamora.ui.component.ProductImageLoader
-import com.example.glamora.ui.navigation.Screen // Import Screen to access Cart route
+import com.example.glamora.ui.navigation.Screen
 import com.example.glamora.viewmodel.CartUiEvent
 import com.example.glamora.viewmodel.CartViewModel
 import com.example.glamora.viewmodel.ProductUiState
@@ -76,20 +76,15 @@ fun ProductDetailScreen(
 
     // FIX: LaunchedEffect to observe CartViewModel events and handle navigation
     LaunchedEffect(Unit) {
-        // Collects one-time events from the ViewModel
         cartViewModel.eventFlow.collect { event ->
             when (event) {
                 is CartUiEvent.ItemAdded -> {
-                    // Show Snackbar and store the result of user interaction
                     val result = snackbarHostState.showSnackbar(
                         message = "${event.productName} added to cart!",
                         actionLabel = "View Cart",
                         duration = SnackbarDuration.Short
                     )
-
-                    // Check if the user clicked the action label
                     if (result == SnackbarResult.ActionPerformed) {
-                        // Navigate to the Cart screen
                         navController.navigate(Screen.Cart.route)
                     }
                 }
@@ -107,22 +102,30 @@ fun ProductDetailScreen(
     var readMore by remember { mutableStateOf(false) }
 
     val screenHorizontalPadding = 20.dp
-    val primaryPink = Color(0xFFE91E63)
+    // ✅ Use theme primary color (instead of hardcoded pink)
+    val primaryPink = MaterialTheme.colorScheme.primary
 
     Scaffold(
-        // Inject the SnackbarHost into the Scaffold
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* Handle Favorite */ }) {
-                        Icon(Icons.Default.FavoriteBorder, contentDescription = "Favorite")
+                        Icon(
+                            Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -136,7 +139,6 @@ fun ProductDetailScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
                     Button(
-                        // ACTION: Calls the ViewModel to add item (which emits the success event)
                         onClick = { product?.let { cartViewModel.addItem(it) } },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,7 +147,12 @@ fun ProductDetailScreen(
                         shape = RoundedCornerShape(24.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
                     ) {
-                        Text("Add to Cart", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Add to Cart",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }
@@ -157,14 +164,16 @@ fun ProductDetailScreen(
                 Box(
                     Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
+                ) { CircularProgressIndicator(color = primaryPink) }
             }
+
             is ProductUiState.Error -> {
                 Box(
                     Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
-                ) { Text("Error loading product") }
+                ) { Text("Error loading product", color = MaterialTheme.colorScheme.onBackground) }
             }
+
             is ProductUiState.Success -> {
                 val currentProduct = product
                 if (currentProduct == null) {
@@ -189,7 +198,7 @@ fun ProductDetailScreen(
                             .fillMaxWidth()
                             .height(300.dp)
                             .clip(RoundedCornerShape(32.dp))
-                            .background(Color(0xFFFFEBEE))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
                     )
 
                     // --- Content Section ---
@@ -212,6 +221,7 @@ fun ProductDetailScreen(
                                     lineHeight = 30.sp,
                                     fontSize = 25.sp
                                 ),
+                                color = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.weight(1f)
                             )
 
@@ -224,8 +234,19 @@ fun ProductDetailScreen(
                                     .background(primaryPink.copy(alpha = 0.15f))
                                     .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
-                                Icon(Icons.Default.Star, contentDescription = null, tint = primaryPink, modifier = Modifier.size(16.dp))
-                                Text("4.8", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 4.dp))
+                                Icon(
+                                    Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = primaryPink,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    "4.8",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
                             }
                         }
 
@@ -257,20 +278,22 @@ fun ProductDetailScreen(
                                     color = primaryPink,
                                     fontWeight = FontWeight.Bold
                                 )
-                                // Placeholder for original price / discount price
                                 Text(
                                     "$99.00",
                                     style = MaterialTheme.typography.titleMedium.copy(textDecoration = TextDecoration.LineThrough),
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
                                 )
                             }
 
-
                             // Quantity Control
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(onClick = { if (quantity > 1) quantity-- }) {
-                                    Icon(Icons.Default.Remove, contentDescription = "Decrease", tint = Color.Gray)
+                                    Icon(
+                                        Icons.Default.Remove,
+                                        contentDescription = "Decrease",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                                 Text(
                                     "$quantity",
@@ -279,7 +302,11 @@ fun ProductDetailScreen(
                                     modifier = Modifier.padding(horizontal = 8.dp)
                                 )
                                 IconButton(onClick = { quantity++ }) {
-                                    Icon(Icons.Default.Add, contentDescription = "Increase", tint = Color.Gray)
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = "Increase",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
                         }
@@ -289,7 +316,8 @@ fun ProductDetailScreen(
                         // --- 5. Description (Read More/Show Less) ---
                         val descriptionLimit = 150
                         val fullDescription = currentProduct.description
-                        val truncatedText = fullDescription.take(descriptionLimit).trim() + if (fullDescription.length > descriptionLimit && !readMore) "..." else ""
+                        val truncatedText = fullDescription.take(descriptionLimit).trim() +
+                                if (fullDescription.length > descriptionLimit && !readMore) "..." else ""
                         val descriptionText = if (readMore) fullDescription else truncatedText
 
                         Text(
@@ -298,7 +326,6 @@ fun ProductDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        // Read More/Show Less Link
                         if (fullDescription.length > descriptionLimit) {
                             Text(
                                 text = if (readMore) "Show Less" else "Read More",
@@ -333,11 +360,12 @@ fun ProductDetailScreen(
 
                         Spacer(Modifier.height(24.dp))
 
-                        // --- 7. Sizes (Custom chip with border highlight) ---
+                        // --- 7. Sizes ---
                         Text(
                             text = "Select Size",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -353,11 +381,12 @@ fun ProductDetailScreen(
 
                         Spacer(Modifier.height(24.dp))
 
-                        // --- 8. Colors (Highlight without grey border when unselected) ---
+                        // --- 8. Colors ---
                         Text(
                             text = "Select Color",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
